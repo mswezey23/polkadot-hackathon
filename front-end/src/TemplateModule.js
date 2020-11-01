@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Grid, Card, Statistic } from 'semantic-ui-react';
-
+import { Form, Input, Grid, Card } from 'semantic-ui-react';
 import { useSubstrate } from './substrate-lib';
 import { TxButton } from './substrate-lib/components';
 
@@ -12,19 +11,23 @@ function Main (props) {
   const [status, setStatus] = useState('');
 
   // The currently stored value
-  const [currentValue, setCurrentValue] = useState(0);
-  const [formValue, setFormValue] = useState(0);
+  const [currentName, setCurrentName] = useState('');
+  const [formName, setFormName] = useState('');
+  const [currentAgree, setCurrentAgree] = useState(false);
+  const [formAgree, setFormAgree] = useState(false);
 
   useEffect(() => {
     let unsubscribe;
-    api.query.templateModule.something(newValue => {
+    api.query.templateModule.councilmembers(newValue => {
       // The storage value is an Option<u32>
       // So we have to check whether it is None first
       // There is also unwrapOr
       if (newValue.isNone) {
-        setCurrentValue('<None>');
+        setCurrentName('<None>');
+        setCurrentAgree(false);
       } else {
-        setCurrentValue(newValue.unwrap().toNumber());
+        setCurrentName(newValue.Name.toHuman());
+        setCurrentAgree(newValue.Agree);
       }
     }).then(unsub => {
       unsubscribe = unsub;
@@ -36,34 +39,42 @@ function Main (props) {
 
   return (
     <Grid.Column width={8}>
-      <h1>Template Module</h1>
+      <h1>Template Module - Modified</h1>
       <Card centered>
         <Card.Content textAlign='center'>
-          <Statistic
-            label='Current Value'
-            value={currentValue}
-          />
+          <Card.Content textAlign='center'>
+            <Card.Header content={`name: ${currentName}`} />
+          </Card.Content>
+          <Card.Content extra>TOS Agree? {currentAgree.toString()}</Card.Content>
         </Card.Content>
       </Card>
       <Form>
         <Form.Field>
           <Input
-            label='New Value'
+            label='Name'
             state='newValue'
-            type='number'
-            onChange={(_, { value }) => setFormValue(value)}
+            type='string'
+            onChange={(_, { value }) => setFormName(value)}
+          />
+        </Form.Field>
+        <Form.Field>
+          <Input
+            label='Agree'
+            state='newValue'
+            type='bool'
+            onChange={(_, { value }) => setFormAgree(value)}
           />
         </Form.Field>
         <Form.Field style={{ textAlign: 'center' }}>
           <TxButton
             accountPair={accountPair}
-            label='Store Something'
+            label='Join Council as member'
             type='SIGNED-TX'
             setStatus={setStatus}
             attrs={{
               palletRpc: 'templateModule',
-              callable: 'doSomething',
-              inputParams: [formValue],
+              callable: 'add_council_member',
+              inputParams: [{ Name: formName, Agree: formAgree }],
               paramFields: [true]
             }}
           />
@@ -76,6 +87,6 @@ function Main (props) {
 
 export default function TemplateModule (props) {
   const { api } = useSubstrate();
-  return (api.query.templateModule && api.query.templateModule.something
+  return (api.query.templateModule && api.query.templateModule.add_council_member
     ? <Main {...props} /> : null);
 }
