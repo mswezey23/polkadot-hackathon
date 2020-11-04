@@ -22,11 +22,11 @@ function Main (props) {
   const keyringOptions = keyring.getPairs().map(account => ({
     key: account.address,
     value: account.address,
-    text: account.meta.name.toUpperCase(),
+    text: account.meta.name ? account.meta.name.toUpperCase() : '',
     icon: 'user'
   }));
 
-  const initialAddress =
+  const initialAddress = 
     keyringOptions.length > 0 ? keyringOptions[0].value : '';
 
   // Set the initial address

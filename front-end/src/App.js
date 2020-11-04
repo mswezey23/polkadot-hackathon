@@ -12,12 +12,14 @@ import Events from './Events';
 import Interactor from './Interactor';
 import Metadata from './Metadata';
 import NodeInfo from './NodeInfo';
-import TemplateModule from './TemplateModule';
+import Multisig from './Multisig';
+import MultisigBalances from './MultisigBalances';
 import Transfer from './Transfer';
 import Upgrade from './Upgrade';
 
 function Main () {
   const [accountAddress, setAccountAddress] = useState(null);
+  const [multisigAddress, setMultisigAddress] = useState(null);
   const { apiState, keyring, keyringState, apiError } = useSubstrate();
   const accountPair =
     accountAddress &&
@@ -73,7 +75,10 @@ function Main () {
             <Events />
           </Grid.Row>
           <Grid.Row>
-            <TemplateModule accountPair={accountPair} />
+            <MultisigBalances multisigAddress={multisigAddress}/>
+          </Grid.Row>
+          <Grid.Row>
+            <Multisig accountPair={accountPair} setMultisigAddress={setMultisigAddress} />
           </Grid.Row>
         </Grid>
       </Container>
